@@ -1,1 +1,1 @@
-# aglut-detect
+# Agglut-detect
