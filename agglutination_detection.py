@@ -1,3 +1,4 @@
+#%%
 from PIL import Image
 import numpy as np
 import pandas as pd
@@ -7,7 +8,7 @@ import matplotlib.pyplot as plt
 from skimage import color
 from skimage import io
 
-
+#%%
 data = list()
 
 for i in range(1,51):   #esto es porque en mi carpeta tenía 50 imagenes que yo había recortado y pasado a escala de grises (todas eran de 60x60 pixeles)
@@ -16,25 +17,33 @@ for i in range(1,51):   #esto es porque en mi carpeta tenía 50 imagenes que yo 
     image = Image.open(file_name + '.jpg')
     matrix = np.array(image)    #convierto la imagen a una matriz 
     data.append(matrix)  #inserto todas las matrices de manera consecutiva a la lista data
-    
-X = np.array(data)    #this contains the full information: (36,60,60)
+
+#%%    
+X = np.array(data)    #this contains the full information: (36,60,60,1)
 
 y = [1,1,0,0,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,0,0,0,1,1,1,0,1,1,1,0,1,1] #by hand
 
 X = np.vstack((X,X,X))   #repetí el dataset 3 veces para aumentar el número de datos
-
+X = X*1./255.
 y = np.hstack((y,y,y))
 
-
+#%%
 #Creating the object: model
 
-model = tf.keras.models.Sequential([tf.keras.layers.Flatten(), 
+model = tf.keras.models.Sequential([
+    tf.keras.Conv2D(128, (3,3)),
+    tf.keras.MaxPooling2D((2,2)),
+    
+    tf.keras.layers.Flatten(), 
                                     tf.keras.layers.Dense(512, activation=tf.nn.relu),   #esta es la parte que no sabemos muy bien el porqué de las cosas
                                     tf.keras.layers.Dense(128, activation=tf.nn.relu), 
-                                    tf.keras.layers.Dense(2, activation=tf.nn.softmax)])
+                                    tf.keras.layers.Dense(1, activation=tf.nn.sigmoid)])
+#%%
+model.summary()
 
+#%%
 model.compile(optimizer = tf.optimizers.Adam(),
-              loss = 'sparse_categorical_crossentropy',
+              loss = 'binary_crossentropy',
               metrics=['accuracy'])
 
 class myCallback(tf.keras.callbacks.Callback):     #tampoco entendemos muy bien esto
